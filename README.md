@@ -4,6 +4,7 @@
 [![LightGBM](https://img.shields.io/badge/LightGBM-4.0%2B-green.svg)](https://lightgbm.readthedocs.io/)
 [![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-Regression-orange.svg)](https://scikit-learn.org/)
 [![Domain](https://img.shields.io/badge/Domain-CLV%20%26%20Retention-purple.svg)](#)
+[![Tests](https://img.shields.io/badge/Tests-Pytest%20Passing-brightgreen.svg)](#)
 
 Repositori ini mengimplementasikan sistem estimasi nilai seumur hidup nasabah (*Customer Lifetime Value / CLV Prediction*) dan analitik retensi pembaruan polis (*Policy Renewal Optimization*) pada portofolio asuransi kendaraan bermotor menggunakan data resmi IBM Watson Marketing.
 
@@ -26,12 +27,14 @@ $$\tilde{y} = \log(1 + \text{CLV}), \quad \widehat{\text{CLV}} = \exp(\hat{y}) -
 ## 2. Struktur Repositori
 
 ```
-├── data/           # Dataset mentah (WA_Fn-UseC_-Marketing-Customer-Value-Analysis.csv)
-├── images/         # Grafik plot hasil render dari Jupyter (300 DPI)
-│   ├── clv_retention_eda.png
-│   └── clv_model_evaluation.png
-├── notebook.ipynb  # Mesin pemrosesan: HANYA berisi impor, olah data, perhitungan statistik, dan pemodelan
-└── README.md       # Laporan utama: Pembahasan bisnis, rumus, tabel metrik, grafik tersemat, dan rekomendasi
+├── .gitignore          # Konfigurasi pengabaian cache Git
+├── data/               # Dataset mentah (WA_Fn-UseC_-Marketing-Customer-Value-Analysis.csv)
+├── images/             # Grafik plot hasil render dari Jupyter & SHAP (300 DPI)
+├── models/             # Binary model pipeline ter-serialize (clv_pipeline.joblib)
+├── src/                # Modular Python inference engine (CLVEngine)
+├── tests/              # Automated unit tests (Pytest)
+├── notebook.ipynb      # Mesin pemrosesan: Impor, olah data, perhitungan statistik, dan pemodelan
+└── README.md           # Laporan utama: Pembahasan bisnis, rumus, tabel metrik, grafik tersemat, dan rekomendasi
 ```
 
 ---
@@ -65,7 +68,36 @@ Evaluasi performa model diuji pada data pengujian terisolasi (*holdout test set*
 
 ---
 
-## 5. Rekomendasi Bisnis & Strategi Retensi Portofolio
+## 5. Explainable AI: SHAP Value Attribution
+
+Visualisasi faktor penentu besaran nilai finansial CLV nasabah:
+
+![SHAP CLV Explainability](images/shap_clv_explainability.png)
+
+---
+
+## 6. Implementasi Modular & Pengujian Otomatis
+
+Modul inferensi CLV tersedia di `src/clv_engine.py`:
+
+```python
+from src.clv_engine import CLVEngine
+import pandas as pd
+
+engine = CLVEngine()
+sample = pd.read_csv('data/WA_Fn-UseC_-Marketing-Customer-Value-Analysis.csv', nrows=1)
+predicted_clv = engine.predict_clv(sample)
+print(f"Prediksi Nilai Seumur Hidup Nasabah: ${predicted_clv[0]:,.2f}")
+```
+
+Jalankan automated test:
+```bash
+pytest tests/
+```
+
+---
+
+## 7. Rekomendasi Bisnis & Strategi Retensi Portofolio
 
 1. **Segmentasi Nasabah Berbasis Kuadran CLV**:
    * **Platinum Tier (CLV > $12.000)**: Terapkan layanan *Dedicated Relationship Manager* dan penawaran renewal eksklusif (*Offer 2*) 60 hari sebelum masa polis berakhir.
@@ -77,7 +109,7 @@ Evaluasi performa model diuji pada data pengujian terisolasi (*holdout test set*
 
 ---
 
-## 6. Panduan Menjalankan
+## 8. Panduan Menjalankan
 
 1. **Pasang Dependensi**:
    ```bash
